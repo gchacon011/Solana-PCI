@@ -27,27 +27,46 @@ jobs:
         with:
           persist-credentials: false
 
-      -      - name: Install Rust 1.91 for host tools
+      # Keep the workspace toolchain pinned by rust-toolchain.toml (1.89.0).
+      - name: Install project Rust toolchain
+        uses: dtolnay/rust-toolchain@1.89.0
+
+      # Anchor CLI and cargo-build-sbf are host utilities. Their current
+      # dependency graph requires a newer host compiler than the project pin.
+      - name: Install Rust 1.91.0 for host tools
         run: rustup toolchain install 1.91.0 --profile minimal
+
+      - name: Install Solana CLI 4.1.2
+        shell: bash
+        run: |
+          sh -c "$(curl --proto '=https' --tlsv1.2 -sSfL https://release.anza.xyz/v4.1.2/install)"
+          SOLANA_BIN="$HOME/.local/share/solana/install/active_release/bin"
+          echo "$SOLANA_BIN" >> "$GITHUB_PATH"
+          export PATH="$SOLANA_BIN:$PATH"
+          command -v solana
+          solana --version
 
       - name: Install Anchor CLI 1.2.2
         run: |
           cargo +1.91.0 install \
             --git https://github.com/otter-sec/anchor \
-            --tag v1.2.2 anchor-cli --locked--locked
+            --tag v1.2.2 anchor-cli --locked
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
 
       - name: Install cargo-build-sbf 4.2.0
-        run: cargo install cargo-build-sbf --version 4.2.0 --force --locked
-
-      - name: Install platform-tools v1.57
         run: |
           cargo +1.91.0 install cargo-build-sbf \
-            --version 4.2.0 --force --locked
+            --version 4.2.0 --locked
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+
+      - name: Install platform-tools v1.57
+        run: cargo build-sbf --tools-version v1.57 --install-only
 
       - name: Verify toolchain versions
         run: |
           rustc --version
           cargo --version
+          rustup run 1.91.0 rustc --version
           solana --version
           anchor --version
           cargo build-sbf --version
