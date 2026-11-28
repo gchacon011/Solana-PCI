@@ -27,27 +27,22 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Install Rust 1.89.0
-        uses: dtolnay/rust-toolchain@1.89.0
-
-      - name: Install Solana CLI 4.1.2
-        shell: bash
-        run: |
-          sh -c "$(curl --proto '=https' --tlsv1.2 -sSfL https://release.anza.xyz/v4.1.2/install)"
-          SOLANA_BIN="$HOME/.local/share/solana/install/active_release/bin"
-          echo "$SOLANA_BIN" >> "$GITHUB_PATH"
-          export PATH="$SOLANA_BIN:$PATH"
-          command -v solana
-          solana --version
+      -      - name: Install Rust 1.91 for host tools
+        run: rustup toolchain install 1.91.0 --profile minimal
 
       - name: Install Anchor CLI 1.2.2
-        run: cargo install --git https://github.com/otter-sec/anchor --tag v1.2.2 anchor-cli --locked
+        run: |
+          cargo +1.91.0 install \
+            --git https://github.com/otter-sec/anchor \
+            --tag v1.2.2 anchor-cli --locked--locked
 
       - name: Install cargo-build-sbf 4.2.0
         run: cargo install cargo-build-sbf --version 4.2.0 --force --locked
 
       - name: Install platform-tools v1.57
-        run: cargo build-sbf --tools-version v1.57 --install-only
+        run: |
+          cargo +1.91.0 install cargo-build-sbf \
+            --version 4.2.0 --force --locked
 
       - name: Verify toolchain versions
         run: |
