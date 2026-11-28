@@ -1,4 +1,3 @@
-
 use {
     anchor_lang::{
         prelude::Pubkey,
@@ -16,11 +15,8 @@ use {
 fn test_initialize() {
     let program_id = solana_pci::id();
     let payer = Keypair::new();
-    let counter = Pubkey::find_program_address(
-        &[solana_pci::constants::COUNTER_SEED],
-        &program_id,
-    )
-    .0;
+    let counter =
+        Pubkey::find_program_address(&[solana_pci::constants::COUNTER_SEED], &program_id).0;
     let mut svm = LiteSVM::new();
     let bytes = include_bytes!(concat!(
         env!("CARGO_TARGET_TMPDIR"),
